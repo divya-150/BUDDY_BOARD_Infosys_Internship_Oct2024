@@ -12,8 +12,7 @@ import { PublicDeckComponent } from './public-deck/public-deck.component';
 import { FlashcardComponent } from './flashcard/flashcard.component';
 import { CardsPageComponent } from './cards-page/cards-page.component';
 import { CardDetailsComponent } from './card-details/card-details.component';
-
-
+import { UserProfileComponent } from './user-profile/user-profile.component';
 export const routes: Routes = [
   {
     path: '',
@@ -96,5 +95,9 @@ export const routes: Routes = [
   {
     path: 'card/:id',
     component: CardDetailsComponent
-  }
+  },
+  {
+    path: 'user-profile/:username',
+    component: UserProfileComponent,
+  },
 ];
