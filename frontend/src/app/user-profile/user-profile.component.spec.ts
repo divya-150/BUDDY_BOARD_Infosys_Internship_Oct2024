@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserProfileComponent } from './user-profile.component';
 import { UserProfileService } from '../services/user-profile.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('UserProfileComponent', () => {
   let component: UserProfileComponent;
@@ -10,7 +10,7 @@ describe('UserProfileComponent', () => {
 
   beforeEach(async () => {
     mockUserProfileService = {
-      getUserData: jasmine.createSpy('getUserData').and.returnValue(
+      getUserProfile: jasmine.createSpy('getUserProfile').and.returnValue(
         of({
           email: 'test@email.com',
           joined: '1st Jan, 2023',
@@ -31,7 +31,7 @@ describe('UserProfileComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
@@ -48,5 +48,29 @@ describe('UserProfileComponent', () => {
   it('should close modal when "Close" is clicked', () => {
     component.closeModal();
     expect(component.showModal).toBeFalse();
+  });
+
+  it('should display error message if API call fails', () => {
+    mockUserProfileService.getUserProfile.and.returnValue(throwError('API error'));
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    const errorMessage = fixture.nativeElement.querySelector('.error');
+    expect(errorMessage.textContent).toContain('Unable to fetch user data');
+  });
+
+  it('should show "No decks available" if the user has no decks', () => {
+    mockUserProfileService.getUserProfile.and.returnValue(
+      of({
+        email: 'test@email.com',
+        joined: '1st Jan, 2023',
+        decks: [],
+      })
+    );
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    const noDecksMessage = fixture.nativeElement.querySelector('.decks-section p');
+    expect(noDecksMessage.textContent).toContain('No decks available for this user.');
   });
 });

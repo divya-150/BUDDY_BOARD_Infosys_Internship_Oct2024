@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ export class UserProfileService {
 
   /**
    * Retrieves the auth token from localStorage.
+   * @returns The stored token or null if not found.
    */
   private getAuthToken(): string | null {
     if (typeof window !== 'undefined' && localStorage) {
@@ -22,27 +24,28 @@ export class UserProfileService {
 
   /**
    * Helper method to construct authorization headers.
+   * @returns An instance of HttpHeaders with the Authorization header if a token is present.
    */
   private createAuthHeaders(): HttpHeaders {
     const token = this.getAuthToken();
     return new HttpHeaders({
+      'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
     });
   }
 
   /**
-   * Get user profile by username.
-   * @param username The username to retrieve the profile for.
+   * Fetches user profile data from the server based on the username.
+   * @param username The username of the profile to fetch.
+   * @returns Observable containing user data or an error if the request fails.
    */
-  getUserData(username: string): Observable<UserProfile> {
+  public getUserProfile(username: string): Observable<any> {
     const headers = this.createAuthHeaders();
-    return this.http.get<UserProfile>(`${this.apiUrl}/${username}`, { headers });
+    return this.http.get(`${this.apiUrl}/${username}`, { headers }).pipe(
+      catchError((error) => {
+        console.error('Error fetching user profile:', error);
+        return throwError(() => new Error('Failed to fetch user profile data. Please try again.'));
+      })
+    );
   }
-}
-
-// Interface defined inside the service file
-export interface UserProfile {
-  email: string;
-  joined: string;
-  decks: string[];
 }
